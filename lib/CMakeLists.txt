@@ -9,4 +9,4 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(eigen)
 
-target_link_libraries(dr_bcg_cpu PRIVATE eigen)
+target_link_libraries(dr_bcg_cpu PUBLIC eigen)
