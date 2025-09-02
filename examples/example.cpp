@@ -27,9 +27,10 @@ int main(int argc, char *argv[]) {
     std::cout << "X:\n" << X << std::endl;
     std::cout << "B:\n" << B << std::endl;
 
-    dr_bcg_cpu::dr_bcg(A, X, B);
+    int iterations = dr_bcg_cpu::dr_bcg(A, X, B);
 
     std::cout << "X Final:\n" << X << std::endl;
+    std::cout << "Iterations: " << iterations << std::endl;
 
     verify(A, X, B);
 

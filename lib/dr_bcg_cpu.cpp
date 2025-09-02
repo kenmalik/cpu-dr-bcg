@@ -24,21 +24,21 @@ function [X_final, iterations] = DR_BCG(A, B, X, tol, maxit)
 end
  */
 
-void dr_bcg_cpu::dr_bcg(const SpMat &A, Mat &X, const Mat &B, float tolerance,
+int dr_bcg_cpu::dr_bcg(const SpMat &A, Mat &X, const Mat &B, float tolerance,
                         int max_iterations) {
     int iterations = 0;
+
     Mat R = B - A * X;
     Eigen::HouseholderQR<Mat> qr(R);
     Mat w = qr.householderQ();
     Mat sigma = qr.matrixQR().triangularView<Eigen::Upper>();
     Mat s = w;
 
-    for (int i = 0; i < max_iterations; ++i) {
-        ++iterations;
-
+    for (iterations = 0; iterations < max_iterations; ++iterations) {
         Mat xi = (s.transpose() * A * s).inverse();
         X = X + s * xi * sigma;
         if ((B.col(0) - A * X.col(0)).norm() / B.col(0).norm() < tolerance) {
+            ++iterations;
             break;
         } else {
             Eigen::HouseholderQR<Mat> qr(w - A * s * xi);
@@ -48,4 +48,6 @@ void dr_bcg_cpu::dr_bcg(const SpMat &A, Mat &X, const Mat &B, float tolerance,
             sigma = zeta * sigma;
         }
     }
+
+    return iterations;
 }
