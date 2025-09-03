@@ -59,7 +59,7 @@ int dr_bcg_cpu::dr_bcg(const SpMat &A, Mat &X, const Mat &B, float tolerance,
         Mat xi = (s.transpose() * A * s).inverse();
         CHECK_NAN(xi, iterations);
 
-        X = X + s * xi * sigma;
+        X.noalias() += s * xi * sigma;
         CHECK_NAN(X, iterations);
 
         if ((B.col(0) - A * X.col(0)).norm() / B.col(0).norm() < tolerance) {
@@ -71,10 +71,10 @@ int dr_bcg_cpu::dr_bcg(const SpMat &A, Mat &X, const Mat &B, float tolerance,
             CHECK_NAN(w, iterations);
             CHECK_NAN(zeta, iterations);
 
-            s = w + s * zeta.transpose();
+            s.noalias() = w + s * zeta.transpose();
             CHECK_NAN(s, iterations);
 
-            sigma = zeta * sigma;
+            sigma.noalias() = zeta * sigma;
             CHECK_NAN(sigma, iterations);
         }
     }
