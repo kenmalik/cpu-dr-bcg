@@ -14,8 +14,8 @@ void check_nan(const Mat &mat, const std::string step) {
         for (int j = 0; j < mat.cols(); ++j) {
             if (std::isnan(mat(i, j))) {
                 std::ostringstream oss;
-                oss << "Nan detected after step '" << step << "'\n"
-                    << mat << std::endl;
+                oss << "Nan detected at (" << i << "," << j << ") after '"
+                    << step << "'";
                 throw std::runtime_error(oss.str());
             }
         }
