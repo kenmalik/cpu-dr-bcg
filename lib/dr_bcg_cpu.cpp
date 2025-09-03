@@ -1,19 +1,13 @@
 #include "dr_bcg_cpu/dr_bcg_cpu.h"
 #include <Eigen/QR>
 #include <cmath>
-#include <string>
-
-#define CHECK_NAN(mat, iteration)                                              \
-    do {                                                                       \
-        check_nan(mat,                                                         \
-                  "iteration " + std::to_string(iteration) + ": " + #mat);     \
-    } while (0);
 
 #ifdef DEBUG
 
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
+#include <string>
 
 void check_nan(const Mat &mat, const std::string step) {
     for (int i = 0; i < mat.rows(); ++i) {
@@ -28,9 +22,17 @@ void check_nan(const Mat &mat, const std::string step) {
     }
 }
 
+#define CHECK_NAN(mat, iteration)                                              \
+    do {                                                                       \
+        check_nan(mat,                                                         \
+                  "iteration " + std::to_string(iteration) + ": " + #mat);     \
+    } while (0);
+
 #else
 
-void check_nan(const Mat &mat, const std::string step) {};
+#define CHECK_NAN(mat, iteration)                                              \
+    do {                                                                       \
+    } while (0);
 
 #endif
 
