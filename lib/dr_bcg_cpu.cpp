@@ -39,7 +39,7 @@ void check_nan(const Mat &mat, const std::string step) {
 inline void reduced_QR(const Mat &A, Mat &Q, Mat &R) {
     const Eigen::Index m = A.rows();
     const Eigen::Index n = A.cols();
-    Eigen::HouseholderQR<Mat> qr(A);
+    Eigen::ColPivHouseholderQR<Mat> qr(A);
     Q = qr.householderQ() * Mat::Identity(m, n);
     R = qr.matrixQR().topLeftCorner(n, n).triangularView<Eigen::Upper>();
 }

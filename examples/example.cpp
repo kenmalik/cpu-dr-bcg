@@ -3,10 +3,10 @@
 #include <suitesparse_matrix.h>
 
 void verify(const SpMat &A, const Mat &X, const Mat &B) {
-    std::cout << "Verification that A * X = B" << std::endl;
-
-    std::cout << "A * X:\n" << A * X << std::endl;
-    std::cout << "B:\n" << B << std::endl;
+    // std::cout << "Verification that A * X = B" << std::endl;
+    //
+    // std::cout << "A * X:\n" << A * X << std::endl;
+    // std::cout << "B:\n" << B << std::endl;
 }
 
 SpMat sparse_matlab_to_eigen(SuiteSparseMatrix &ssm) {
@@ -38,14 +38,14 @@ int main(int argc, char *argv[]) {
     Mat X = Mat::Constant(n, s, 0);
     Mat B = Mat::Constant(n, s, 1);
 
-    std::cout << "A:\n"
-              << Eigen::MatrixXf(A).format({2, 0, ", ", "\n"}) << std::endl;
-    std::cout << "X:\n" << X << std::endl;
-    std::cout << "B:\n" << B << std::endl;
+    // std::cout << "A:\n"
+    //           << Eigen::MatrixXf(A).format({2, 0, ", ", "\n"}) << std::endl;
+    // std::cout << "X:\n" << X << std::endl;
+    // std::cout << "B:\n" << B << std::endl;
 
-    int iterations = dr_bcg_cpu::dr_bcg(A, X, B, 0.001);
+    int iterations = dr_bcg_cpu::dr_bcg(A, X, B, 0.001, 10);
 
-    std::cout << "X Final:\n" << X << std::endl;
+    // std::cout << "X Final:\n" << X << std::endl;
     std::cout << "Iterations: " << iterations << std::endl;
 
     verify(A, X, B);
