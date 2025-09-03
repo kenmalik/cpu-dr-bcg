@@ -10,8 +10,8 @@
 #include <string>
 
 void check_nan(const Mat &mat, const std::string step) {
-    for (int i = 0; i < mat.rows(); ++i) {
-        for (int j = 0; j < mat.cols(); ++j) {
+    for (Eigen::Index i = 0; i < mat.rows(); ++i) {
+        for (Eigen::Index j = 0; j < mat.cols(); ++j) {
             if (std::isnan(mat(i, j))) {
                 std::ostringstream oss;
                 oss << "Nan detected at (" << i << "," << j << ") after '"
@@ -37,8 +37,8 @@ void check_nan(const Mat &mat, const std::string step) {
 #endif
 
 inline void reduced_QR(const Mat &A, Mat &Q, Mat &R) {
-    const int m = A.rows();
-    const int n = A.cols();
+    const Eigen::Index m = A.rows();
+    const Eigen::Index n = A.cols();
     Eigen::HouseholderQR<Mat> qr(A);
     Q = qr.householderQ() * Mat::Identity(m, n);
     R = qr.matrixQR().topLeftCorner(n, n).triangularView<Eigen::Upper>();
