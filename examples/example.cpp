@@ -9,10 +9,8 @@ void verify(const SpMat &A, const Mat &X, const Mat &B) {
     std::cout << "B:\n" << B << std::endl;
 }
 
-int main(int argc, char *argv[]) {
-    SuiteSparseMatrix ssm(argv[1]);
+SpMat sparse_matlab_to_eigen(SuiteSparseMatrix &ssm) {
     const int n = ssm.rows();
-    constexpr int s = 4;
 
     SpMat A(n, n);
     std::vector<T> triplet_list(n);
@@ -28,6 +26,15 @@ int main(int argc, char *argv[]) {
     }
     A.setFromTriplets(triplet_list.begin(), triplet_list.end());
 
+    return A;
+}
+
+int main(int argc, char *argv[]) {
+    SuiteSparseMatrix ssm(argv[1]);
+    const int n = ssm.rows();
+    constexpr int s = 4;
+
+    SpMat A = sparse_matlab_to_eigen(ssm);
     Mat X = Mat::Constant(n, s, 0);
     Mat B = Mat::Constant(n, s, 1);
 
