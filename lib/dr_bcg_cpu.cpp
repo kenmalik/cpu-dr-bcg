@@ -55,8 +55,10 @@ int dr_bcg_cpu::dr_bcg(const SpMat &A, Mat &X, const Mat &B, float tolerance,
 
     Mat s = w;
 
+    Mat xi, zeta;
+
     for (iterations = 0; iterations < max_iterations; ++iterations) {
-        Mat xi = (s.transpose() * A * s).inverse();
+        xi.noalias() = (s.transpose() * A * s).inverse();
         CHECK_NAN(xi, iterations);
 
         X.noalias() += s * xi * sigma;
@@ -66,7 +68,6 @@ int dr_bcg_cpu::dr_bcg(const SpMat &A, Mat &X, const Mat &B, float tolerance,
             ++iterations;
             break;
         } else {
-            Mat zeta;
             reduced_QR(w - A * s * xi, w, zeta);
             CHECK_NAN(w, iterations);
             CHECK_NAN(zeta, iterations);
