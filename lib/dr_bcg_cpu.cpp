@@ -45,7 +45,7 @@ inline void reduced_QR(const Mat &A, Mat &Q, Mat &R) {
     R = qr.matrixQR().topLeftCorner(n, n).triangularView<Eigen::Upper>();
 }
 
-int dr_bcg_cpu::dr_bcg(const SpMat &A, Mat &X, const Mat &B, float tolerance,
+int dr_bcg_cpu::dr_bcg(const SpMat &A, Mat &X, const Mat &B, CalcType tolerance,
                        int max_iterations) {
     int iterations = 0;
 
