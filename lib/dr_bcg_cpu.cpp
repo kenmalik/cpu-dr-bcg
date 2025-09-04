@@ -73,10 +73,10 @@ int dr_bcg_cpu::dr_bcg(const SpMat &A, Mat &X, const Mat &B, CalcType tolerance,
             CHECK_NAN(w, iterations);
             CHECK_NAN(zeta, iterations);
 
-            s.noalias() = w + s * zeta.transpose();
+            s = w + s * zeta.transpose();
             CHECK_NAN(s, iterations);
 
-            sigma.noalias() = zeta * sigma;
+            sigma = zeta * sigma;
             CHECK_NAN(sigma, iterations);
         }
     }
