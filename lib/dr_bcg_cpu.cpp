@@ -1,9 +1,9 @@
 #include "dr_bcg_cpu/dr_bcg_cpu.h"
 #include <Eigen/QR>
-#include <cmath>
 
 #ifdef DEBUG
 
+#include <cmath>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
