@@ -1,9 +1,9 @@
 #include "dr_bcg_cpu/dr_bcg_cpu.h"
 #include <Eigen/QR>
-#include <cmath>
 
 #ifdef DEBUG
 
+#include <cmath>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
@@ -39,12 +39,13 @@ void check_nan(const Mat &mat, const std::string step) {
 inline void reduced_QR(const Mat &A, Mat &Q, Mat &R) {
     const Eigen::Index m = A.rows();
     const Eigen::Index n = A.cols();
-    Eigen::HouseholderQR<Mat> qr(A);
+    assert(m >= n && "reduced_QR assumes m >= n");
+    Eigen::ColPivHouseholderQR<Mat> qr(A);
     Q = qr.householderQ() * Mat::Identity(m, n);
     R = qr.matrixQR().topLeftCorner(n, n).triangularView<Eigen::Upper>();
 }
 
-int dr_bcg_cpu::dr_bcg(const SpMat &A, Mat &X, const Mat &B, float tolerance,
+int dr_bcg_cpu::dr_bcg(const SpMat &A, Mat &X, const Mat &B, CalcType tolerance,
                        int max_iterations) {
     int iterations = 0;
 
@@ -72,10 +73,10 @@ int dr_bcg_cpu::dr_bcg(const SpMat &A, Mat &X, const Mat &B, float tolerance,
             CHECK_NAN(w, iterations);
             CHECK_NAN(zeta, iterations);
 
-            s.noalias() = w + s * zeta.transpose();
+            s = w + s * zeta.transpose();
             CHECK_NAN(s, iterations);
 
-            sigma.noalias() = zeta * sigma;
+            sigma = zeta * sigma;
             CHECK_NAN(sigma, iterations);
         }
     }

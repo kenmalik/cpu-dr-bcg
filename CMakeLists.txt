@@ -6,7 +6,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+option(CPU_DR_BCG_BUILD_EXAMPLES "Build examples" OFF)
+
 add_subdirectory("lib")
 
-add_subdirectory("examples")
-
+if (CPU_DR_BCG_BUILD_EXAMPLES)
+    add_subdirectory("examples")
+endif()

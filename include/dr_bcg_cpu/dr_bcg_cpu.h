@@ -13,6 +13,6 @@ using T = Eigen::Triplet<CalcType, IndexType>;
 
 namespace dr_bcg_cpu {
 int dr_bcg(const SpMat &A, Mat &X, const Mat &B,
-            float tolerance = std::numeric_limits<CalcType>::epsilon(),
-            int max_iterations = 1000);
+           CalcType tolerance = std::numeric_limits<CalcType>::epsilon(),
+           int max_iterations = 1000);
 };
