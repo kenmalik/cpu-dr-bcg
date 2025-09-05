@@ -1,33 +1,9 @@
 #include "dr_bcg_cpu/dr_bcg_cpu.h"
 #include "dr_bcg_cpu/profiler.hpp"
 #include <algorithm>
-#include <chrono>
 #include <iostream>
 #include <string>
 #include <suitesparse_matrix.h>
-#include <unordered_map>
-
-void print_timings(const SolverTimings &timings, int iterations) {
-    std::unordered_map<Event, std::string> event_names{
-        {Event::GetXi, "GetXi"},
-        {Event::GetX, "GetX"},
-        {Event::GetResidual, "GetResidual"},
-        {Event::GetWZeta, "GetWZeta"},
-        {Event::GetS, "GetS"},
-        {Event::GetSigma, "GetSigma"}};
-
-    std::cout << "Timings:" << std::endl;
-
-    std::cout << "event,total(ms),average(ms)" << std::endl;
-    for (int i = 0; i < static_cast<int>(Event::Count); ++i) {
-        const auto &e = event_names[static_cast<Event>(i)];
-        const auto &t = timings.totals[i];
-        const auto &ms =
-            std::chrono::duration_cast<std::chrono::milliseconds>(t);
-        std::cout << e << ',' << ms.count() << ','
-                  << ms.count() / static_cast<float>(iterations) << std::endl;
-    };
-}
 
 void print_error(const SpMat &A, const Mat &X, const Mat &B) {
     const int m = B.rows();
@@ -92,16 +68,13 @@ int main(int argc, char *argv[]) {
     constexpr CalcType TOLERANCE = 0.001;
     constexpr int MAX_ITERATIONS = 100;
 
-    SolverTimings timings;
     int iterations =
-        dr_bcg_cpu::dr_bcg(A, X, B, TOLERANCE, MAX_ITERATIONS, &timings);
+        dr_bcg_cpu::dr_bcg(A, X, B, TOLERANCE, MAX_ITERATIONS);
+
     std::cout << "Iterations: " << iterations << std::endl;
 
     std::cout << std::endl;
     print_error(A, X, B);
-
-    std::cout << std::endl;
-    print_timings(timings, iterations);
 
     return 0;
 }
