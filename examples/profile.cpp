@@ -1,6 +1,7 @@
 #include "dr_bcg_cpu/dr_bcg_cpu.h"
 #include "dr_bcg_cpu/profiler.hpp"
 #include <chrono>
+#include <filesystem>
 #include <iostream>
 #include <ratio>
 #include <string>
@@ -49,9 +50,25 @@ SpMat sparse_matlab_to_eigen(SuiteSparseMatrix &ssm) {
 }
 
 int main(int argc, char *argv[]) {
+    if (argc < 3) {
+        std::cerr << "Usage: profile [MAT_FILE] [BLOCK_SIZE]" << std::endl;
+        return 1;
+    }
+
+    if (!std::filesystem::exists(argv[1])) {
+        std::cerr << argv[1] << " does not exist" << std::endl;
+        return 1;
+    }
+
+    const int s = atoi(argv[2]);
+    if (s <= 0) {
+        std::cerr << argv[2] << " is an invalid s value" << std::endl;
+        return 1;
+    }
+
     SuiteSparseMatrix ssm(argv[1]);
     const int n = ssm.rows();
-    constexpr int s = 4;
+    std::cerr << n << ' ' << s << std::endl;
 
     SpMat A = sparse_matlab_to_eigen(ssm);
     Mat X = Mat::Constant(n, s, 0);
