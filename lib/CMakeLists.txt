@@ -9,5 +9,9 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(eigen)
 
-target_compile_definitions(dr_bcg_cpu PRIVATE $<$<CONFIG:Debug>:DEBUG>)
+target_compile_definitions(
+    dr_bcg_cpu PRIVATE
+    $<$<CONFIG:Debug>:DEBUG>
+    $<$<BOOL:${CPU_DR_BCG_PROFILE_SOLVER}>:PROFILE_SOLVER>
+)
 target_link_libraries(dr_bcg_cpu PUBLIC eigen)

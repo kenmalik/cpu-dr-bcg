@@ -1,12 +1,61 @@
 #include "dr_bcg_cpu/dr_bcg_cpu.h"
+#include "dr_bcg_cpu/profiler.hpp"
+#include <algorithm>
+#include <chrono>
 #include <iostream>
+#include <string>
 #include <suitesparse_matrix.h>
+#include <unordered_map>
 
-void verify(const SpMat &A, const Mat &X, const Mat &B) {
-    // std::cout << "Verification that A * X = B" << std::endl;
-    //
-    // std::cout << "A * X:\n" << A * X << std::endl;
-    // std::cout << "B:\n" << B << std::endl;
+void print_timings(const SolverTimings &timings, int iterations) {
+    std::unordered_map<Event, std::string> event_names{
+        {Event::GetXi, "GetXi"},
+        {Event::GetX, "GetX"},
+        {Event::GetResidual, "GetResidual"},
+        {Event::GetWZeta, "GetWZeta"},
+        {Event::GetS, "GetS"},
+        {Event::GetSigma, "GetSigma"}};
+
+    std::cout << "Timings:" << std::endl;
+
+    std::cout << "event,total(ms),average(ms)" << std::endl;
+    for (int i = 0; i < static_cast<int>(Event::Count); ++i) {
+        const auto &e = event_names[static_cast<Event>(i)];
+        const auto &t = timings.totals[i];
+        const auto &ms =
+            std::chrono::duration_cast<std::chrono::milliseconds>(t);
+        std::cout << e << ',' << ms.count() << ','
+                  << ms.count() / static_cast<float>(iterations) << std::endl;
+    };
+}
+
+void print_error(const SpMat &A, const Mat &X, const Mat &B) {
+    const int m = B.rows();
+    const int n = B.cols();
+
+    if (m <= 0 || n <= 0) {
+        return;
+    }
+
+    Mat product = A * X;
+
+    CalcType total_error = 0;
+    CalcType min_error = std::abs(B(0, 0) - product(0, 0));
+    CalcType max_error = min_error;
+
+    for (int i = 0; i < m; ++i) {
+        for (int j = 0; j < n; ++j) {
+            CalcType error = std::abs(B(i, j) - product(i, j));
+            total_error += error;
+            min_error = std::min(min_error, error);
+            max_error = std::max(max_error, error);
+        }
+    }
+
+    std::cout << "Error:" << std::endl;
+    std::cout << "Min Error: " << min_error << std::endl;
+    std::cout << "Max Error: " << max_error << std::endl;
+    std::cout << "Average Error: " << total_error / B.size() << std::endl;
 }
 
 SpMat sparse_matlab_to_eigen(SuiteSparseMatrix &ssm) {
@@ -34,21 +83,25 @@ int main(int argc, char *argv[]) {
     const int n = ssm.rows();
     constexpr int s = 4;
 
+    std::cout << "n: " << n << "\ns: " << s << '\n' << std::endl;
+
     SpMat A = sparse_matlab_to_eigen(ssm);
     Mat X = Mat::Constant(n, s, 0);
     Mat B = Mat::Constant(n, s, 1);
 
-    // std::cout << "A:\n"
-    //           << Eigen::MatrixXf(A).format({2, 0, ", ", "\n"}) << std::endl;
-    // std::cout << "X:\n" << X << std::endl;
-    // std::cout << "B:\n" << B << std::endl;
+    constexpr CalcType TOLERANCE = 0.001;
+    constexpr int MAX_ITERATIONS = 100;
 
-    int iterations = dr_bcg_cpu::dr_bcg(A, X, B, 0.001, 10);
-
-    // std::cout << "X Final:\n" << X << std::endl;
+    SolverTimings timings;
+    int iterations =
+        dr_bcg_cpu::dr_bcg(A, X, B, TOLERANCE, MAX_ITERATIONS, &timings);
     std::cout << "Iterations: " << iterations << std::endl;
 
-    verify(A, X, B);
+    std::cout << std::endl;
+    print_error(A, X, B);
+
+    std::cout << std::endl;
+    print_timings(timings, iterations);
 
     return 0;
 }
