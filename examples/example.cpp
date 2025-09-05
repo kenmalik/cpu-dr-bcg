@@ -1,12 +1,37 @@
 #include "dr_bcg_cpu/dr_bcg_cpu.h"
+#include "dr_bcg_cpu/profiler.hpp"
+#include <algorithm>
 #include <iostream>
+#include <string>
 #include <suitesparse_matrix.h>
 
-void verify(const SpMat &A, const Mat &X, const Mat &B) {
-    // std::cout << "Verification that A * X = B" << std::endl;
-    //
-    // std::cout << "A * X:\n" << A * X << std::endl;
-    // std::cout << "B:\n" << B << std::endl;
+void print_error(const SpMat &A, const Mat &X, const Mat &B) {
+    const int m = B.rows();
+    const int n = B.cols();
+
+    if (m <= 0 || n <= 0) {
+        return;
+    }
+
+    Mat product = A * X;
+
+    CalcType total_error = 0;
+    CalcType min_error = std::abs(B(0, 0) - product(0, 0));
+    CalcType max_error = min_error;
+
+    for (int i = 0; i < m; ++i) {
+        for (int j = 0; j < n; ++j) {
+            CalcType error = std::abs(B(i, j) - product(i, j));
+            total_error += error;
+            min_error = std::min(min_error, error);
+            max_error = std::max(max_error, error);
+        }
+    }
+
+    std::cout << "Error:" << std::endl;
+    std::cout << "Min Error: " << min_error << std::endl;
+    std::cout << "Max Error: " << max_error << std::endl;
+    std::cout << "Average Error: " << total_error / B.size() << std::endl;
 }
 
 SpMat sparse_matlab_to_eigen(SuiteSparseMatrix &ssm) {
@@ -34,21 +59,22 @@ int main(int argc, char *argv[]) {
     const int n = ssm.rows();
     constexpr int s = 4;
 
+    std::cout << "n: " << n << "\ns: " << s << '\n' << std::endl;
+
     SpMat A = sparse_matlab_to_eigen(ssm);
     Mat X = Mat::Constant(n, s, 0);
     Mat B = Mat::Constant(n, s, 1);
 
-    // std::cout << "A:\n"
-    //           << Eigen::MatrixXf(A).format({2, 0, ", ", "\n"}) << std::endl;
-    // std::cout << "X:\n" << X << std::endl;
-    // std::cout << "B:\n" << B << std::endl;
+    constexpr CalcType TOLERANCE = 0.001;
+    constexpr int MAX_ITERATIONS = 100;
 
-    int iterations = dr_bcg_cpu::dr_bcg(A, X, B, 0.001, 10);
+    int iterations =
+        dr_bcg_cpu::dr_bcg(A, X, B, TOLERANCE, MAX_ITERATIONS);
 
-    // std::cout << "X Final:\n" << X << std::endl;
     std::cout << "Iterations: " << iterations << std::endl;
 
-    verify(A, X, B);
+    std::cout << std::endl;
+    print_error(A, X, B);
 
     return 0;
 }

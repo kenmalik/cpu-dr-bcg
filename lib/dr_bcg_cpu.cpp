@@ -1,4 +1,5 @@
 #include "dr_bcg_cpu/dr_bcg_cpu.h"
+#include "dr_bcg_cpu/profiler.hpp"
 #include <Eigen/QR>
 
 #ifdef DEBUG
@@ -45,8 +46,12 @@ inline void reduced_QR(const Mat &A, Mat &Q, Mat &R) {
     R = qr.matrixQR().topLeftCorner(n, n).triangularView<Eigen::Upper>();
 }
 
+using Prof = Profiler<(PROFILE_SOLVER != 0)>;
+
 int dr_bcg_cpu::dr_bcg(const SpMat &A, Mat &X, const Mat &B, CalcType tolerance,
-                       int max_iterations) {
+                       int max_iterations, SolverTimings *timings) {
+    Prof prof;
+
     int iterations = 0;
 
     Mat R = B - A * X;
@@ -58,28 +63,56 @@ int dr_bcg_cpu::dr_bcg(const SpMat &A, Mat &X, const Mat &B, CalcType tolerance,
 
     Mat xi, zeta;
 
+    CalcType residual;
+
     for (iterations = 0; iterations < max_iterations; ++iterations) {
-        xi.noalias() = (s.transpose() * A * s).inverse();
-        CHECK_NAN(xi, iterations);
+        {
+            PROFILE_BLOCK(prof, Event::GetXi);
+            xi.noalias() = (s.transpose() * A * s).inverse();
+            CHECK_NAN(xi, iterations);
+        }
 
-        X.noalias() += s * xi * sigma;
-        CHECK_NAN(X, iterations);
+        {
+            PROFILE_BLOCK(prof, Event::GetX);
+            X.noalias() += s * xi * sigma;
+            CHECK_NAN(X, iterations);
+        }
 
-        if ((B.col(0) - A * X.col(0)).norm() / B.col(0).norm() < tolerance) {
+        {
+            PROFILE_BLOCK(prof, Event::GetResidual);
+            residual = (B.col(0) - A * X.col(0)).norm() / B.col(0).norm();
+        }
+
+        if (residual < tolerance) {
             ++iterations;
             break;
         } else {
-            reduced_QR(w - A * s * xi, w, zeta);
-            CHECK_NAN(w, iterations);
-            CHECK_NAN(zeta, iterations);
+            {
+                PROFILE_BLOCK(prof, Event::GetWZeta);
+                reduced_QR(w - A * s * xi, w, zeta);
+                CHECK_NAN(w, iterations);
+                CHECK_NAN(zeta, iterations);
+            }
 
-            s = w + s * zeta.transpose();
-            CHECK_NAN(s, iterations);
+            {
+                PROFILE_BLOCK(prof, Event::GetS);
+                s = w + s * zeta.transpose();
+                CHECK_NAN(s, iterations);
+            }
 
-            sigma = zeta * sigma;
-            CHECK_NAN(sigma, iterations);
+            {
+                PROFILE_BLOCK(prof, Event::GetSigma);
+                sigma = zeta * sigma;
+                CHECK_NAN(sigma, iterations);
+            }
         }
     }
+
+#ifdef PROFILE_SOLVER
+    if (timings) {
+        *timings = SolverTimings{prof.totals};
+    }
+#endif
 
     return iterations;
 }

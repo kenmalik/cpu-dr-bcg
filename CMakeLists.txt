@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(CPU_DR_BCG_BUILD_EXAMPLES "Build examples" OFF)
+option(CPU_DR_BCG_PROFILE_SOLVER "Profile solver" OFF)
 
 add_subdirectory("lib")
 
