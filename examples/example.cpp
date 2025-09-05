@@ -1,5 +1,4 @@
 #include "dr_bcg_cpu/dr_bcg_cpu.h"
-#include "dr_bcg_cpu/profiler.hpp"
 #include <algorithm>
 #include <iostream>
 #include <string>
