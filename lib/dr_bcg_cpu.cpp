@@ -108,7 +108,7 @@ int dr_bcg_cpu::dr_bcg(const SpMat &A, Mat &X, const Mat &B, CalcType tolerance,
         }
     }
 
-#ifdef PROFILE_SOLVER
+#if PROFILE_SOLVER != 0
     if (timings) {
         *timings = SolverTimings{prof.totals};
     }
